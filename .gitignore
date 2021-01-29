@@ -1,0 +1,10 @@
+/.vs
+/x64
+raylib.dll
+*.exe
+*.ilk
+*.ipch
+*.obj
+*.pdb
+*.suo
+*.json
