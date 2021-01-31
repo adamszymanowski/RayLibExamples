@@ -4,87 +4,64 @@
 
 int main(void)
 {
-    // Screen Setup
     const int screenWidth = 800;
-    const int screenHeight = 450;
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - keyboard input");
+    const int screenHeight = 600;
+    InitWindow(screenWidth, screenHeight, "raylib [core] example - mouse input");
     SetTargetFPS(60);
 
-    // Game setup
-    Vector2 ballPosition = { (float)screenWidth / 2, (float)screenHeight / 2 };
-    float ballRadius = 20;
+    Vector2 ballPosition = { -100.0f, -100.0f };
+    unsigned int ballRadius = 40;
+    const int minRadius = 20;
+    const int maxRadius = 60;
 
-    #define debugBufferSize 10
-    char debugBuffer[debugBufferSize] = { 0 };
+    Color colors[] = {GOLD, ORANGE, RED, MAROON, PINK, PURPLE, VIOLET, DARKPURPLE, DARKBLUE, BLUE, SKYBLUE, LIME, GREEN};
+    const int numberOfColors = sizeof(colors) / sizeof(Color);
+    Color ballColor = colors[0];
+    unsigned int colorCycleCounter = 0;
+    bool minFlag = false;
+    bool maxFlag = false;
 
     while (!WindowShouldClose())
     {
+        ballPosition = GetMousePosition();
+        if (ballPosition.x < ballRadius)                    ballPosition.x = ballRadius;
+        if (ballPosition.x > (screenWidth - ballRadius))    ballPosition.x = (screenWidth - ballRadius);
+        if (ballPosition.y < ballRadius)                    ballPosition.y = ballRadius;
+        if (ballPosition.y > (screenHeight - ballRadius))   ballPosition.y = (screenHeight - ballRadius);
 
-        if (IsKeyDown(KEY_LEFT))
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            float boundaryLeft = ballRadius;
-            if (ballPosition.x <= boundaryLeft)
-            {
-                ballPosition.x = boundaryLeft;
-            }
-            else
-            {
-                ballPosition.x -= 2.0f;
-            }
+            ballColor = colors[++colorCycleCounter % numberOfColors];
+            if (ballRadius < maxRadius) ballRadius += 2;
         }
 
-        if (IsKeyDown(KEY_RIGHT))
+        if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
         {
-            float boundaryDown = (screenWidth - ballRadius);
-            if (ballPosition.x >= boundaryDown)
-            {
-                ballPosition.x = boundaryDown;
-            }
-            else
-            {
-                ballPosition.x += 2.0f;
-            }
+            ballColor = colors[--colorCycleCounter % numberOfColors];
+            if (ballRadius > minRadius) ballRadius -= 2;
         }
 
-        if (IsKeyDown(KEY_UP))
-        {
-            float boundaryUp = ballRadius;
-            if (ballPosition.y <= boundaryUp) 
-            {
-                ballPosition.y = boundaryUp;
-            }
-            else
-            {
-                ballPosition.y -= 2.0f;
-            }
-        }
+        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && ballRadius == minRadius)
+            minFlag = true;
+        else minFlag = false;
 
-        if (IsKeyDown(KEY_DOWN))
-        {
-            float boundaryDown = (screenHeight - ballRadius);
-            if (ballPosition.y >= boundaryDown)
-            {
-                ballPosition.y = boundaryDown;
-            }
-            else
-            {
-                ballPosition.y += 2.0f;
-            }
-        }
+
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && ballRadius == maxRadius) 
+             maxFlag = true;
+        else maxFlag = false;
 
         // Drawing logic in separate block for good measure.
         BeginDrawing();
         {
             ClearBackground(RAYWHITE);
-            DrawText("move the ball with arrow keys", 10, 10, 20, DARKGRAY);
-            DrawCircleV(ballPosition, ballRadius, MAROON);
+            if (minFlag) DrawText("can't shrink more!", 10, 30, 20, MAROON);
+            if (maxFlag) DrawText("can't grow more!", 10, 30, 20, MAROON);
 
-            // Debug drawing
-            snprintf(debugBuffer, debugBufferSize, "X: %f", ballPosition.x);
-            DrawText(debugBuffer, screenWidth - 100, 10, 20, DARKBLUE);
-            snprintf(debugBuffer, debugBufferSize, "Y: %f", ballPosition.y);
-            DrawText(debugBuffer, screenWidth-100, 30, 20, DARKBLUE);
+            DrawCircleV(ballPosition, ballRadius, ballColor);
 
+
+            DrawText("move ball with mouse and click mouse buttons to toggle through colors", 10, 10, 20, DARKGRAY);
         }
         EndDrawing();
     }
